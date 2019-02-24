@@ -12,6 +12,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "chalk": "^2.4.2",
+    "debug": "^4.1.1",
     "openzeppelin-solidity": "^2.1.2"
   }
 }
