@@ -1,5 +1,5 @@
-const ROKToken = artifacts.require("ROKToken");
-const ROKMintContract = artifacts.require("ROKMintContract");
+const RaeToken = artifacts.require("RaeToken");
+const RaeMintContract = artifacts.require("RaeMintContract");
 
 contract('2_initial_deployment', function(accounts) {
     let creator = accounts[0];
@@ -8,8 +8,8 @@ contract('2_initial_deployment', function(accounts) {
     const REVERT_ERROR_MESSAGE = 'Returned error: VM Exception while processing transaction: revert';
 
     beforeEach(async function() {
-        token = await ROKToken.deployed();
-        minter = await ROKMintContract.deployed();
+        token = await RaeToken.deployed();
+        minter = await RaeMintContract.deployed();
     })
 
     describe('MintContract deployment checks', () => {
@@ -33,10 +33,10 @@ contract('2_initial_deployment', function(accounts) {
             expect(res).to.equal(true);
         });
 
-        it('Token creator does not have minting role', async ()=>{
-            let res = await token.isMinter.call(creator);
-            expect(res).to.equal(false);
-        });
+        // it('Token creator does not have minting role', async ()=>{
+        //     let res = await token.isMinter.call(creator);
+        //     expect(res).to.equal(false);
+        // });
 
         it('Token supply is initially 0', async () => {
             let totalSupply = await token.totalSupply.call();

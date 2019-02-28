@@ -1,12 +1,12 @@
 
 async function subscribeToEvents() {
-  var ROKToken = artifacts.require("../contracts/ROKToken.sol");
+  var RaeToken = artifacts.require("../contracts/RaeToken.sol");
   let accounts = await web3.eth.getAccounts();
   let rokfin = accounts[3];
   let nytimes = accounts[4];
   let fedserver = accounts[0];
 
-  let token = await ROKToken.deployed();
+  let token = await RaeToken.deployed();
 
   token.allEvents({
     filter: { from: rokfin }, // Using an array means OR: e.g. 20 or 23

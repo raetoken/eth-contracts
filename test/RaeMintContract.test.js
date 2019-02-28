@@ -1,7 +1,7 @@
-const ROKToken = artifacts.require("ROKToken");
-const ROKMintContract = artifacts.require("ROKMintContract");
+const RaeToken = artifacts.require("RaeToken");
+const RaeMintContract = artifacts.require("RaeMintContract");
 
-contract('ROKMintContract', function(accounts) {
+contract('RaeMintContract', function(accounts) {
     let creator = accounts[0];
     let tokenProps = {
         name: "RokfinToken",
@@ -14,10 +14,9 @@ contract('ROKMintContract', function(accounts) {
     const REVERT_ERROR_MESSAGE = 'Returned error: VM Exception while processing transaction: revert';
 
     beforeEach(async function() {
-        token = await ROKToken.new(tokenProps.name, tokenProps.symbol, tokenProps.decimals, tokenProps.cap, {from: creator});
-        minter = await ROKMintContract.new(token.address, {from:creator});
+        token = await RaeToken.new(tokenProps.name, tokenProps.symbol, tokenProps.decimals, tokenProps.cap, {from: creator});
+        minter = await RaeMintContract.new(token.address, {from:creator});
         token.addMinter(minter.address, {from:creator});
-        token.renounceMinter({from:creator})
     })
 
     describe('mint method', ()=>{
@@ -62,6 +61,28 @@ contract('ROKMintContract', function(accounts) {
             expect(balanceAfter.toNumber()).to.equal(balanceBefore.toNumber() + mintAmount);
         })
 
+    })
+
+    describe('transfer to new mint contract', () => {
+        it('addMinter gives new contract minting role', async () => {
+            minterV2 = await RaeMintContract.new(token.address, {from:creator});
+            await minter.addMinter(minterV2.address);
+            let balanceBefore = await token.balanceOf.call(accounts[2]);
+            let mintAmount = 10;
+            await minterV2.mint(accounts[2], mintAmount, {from:creator});
+            let balanceAfter = await token.balanceOf.call(accounts[2]);
+            expect(balanceAfter.toNumber()).to.equal(balanceBefore.toNumber() + mintAmount);
+        })
+
+        it('after revoke, mint contract can not mint', async () => {
+            await minter.renounceMintingRole();
+            try {
+                await minter.mint(accounts[2], 10, {from:creator});
+                expect.fail();
+            } catch (error) {
+                expect(error.message).to.equal(REVERT_ERROR_MESSAGE);
+            }
+        })
     })
     
 

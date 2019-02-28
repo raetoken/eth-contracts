@@ -1,8 +1,8 @@
 
 
 async function burn_plus_mint() {
-  var ROKToken = artifacts.require("../contracts/ROKToken.sol");
-  var ROKMintContract = artifacts.require("../contracts/ROKMintContract.sol");
+  var RaeToken = artifacts.require("../contracts/RaeToken.sol");
+  var RaeMintContract = artifacts.require("../contracts/RaeMintContract.sol");
 
   let accounts = await web3.eth.getAccounts();
   let rokfin = accounts[3];
@@ -10,8 +10,8 @@ async function burn_plus_mint() {
   let fedserver = accounts[0];
   let zero_address = '0x0000000000000000000000000000000000000000';
 
-  let token = await ROKToken.deployed();
-  let minter = await ROKMintContract.deployed();
+  let token = await RaeToken.deployed();
+  let minter = await RaeMintContract.deployed();
 
   // Mint some tokens to rokfin and nytimes
   let response = await minter.mint(rokfin, 1000, { from: fedserver });

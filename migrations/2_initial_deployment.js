@@ -1,5 +1,5 @@
-var tokenContract = artifacts.require("ROKToken");
-var mintContract = artifacts.require("ROKMintContract")
+var tokenContract = artifacts.require("RaeToken");
+var mintContract = artifacts.require("RaeMintContract")
 
 
 module.exports = async function(deployer,networks,accounts) {
@@ -10,13 +10,12 @@ module.exports = async function(deployer,networks,accounts) {
 
     //})
     let cap = 21000000;
-    await deployer.deploy(tokenContract, "Rokfin Token", "ROK", 18, cap, {from: accounts[0]});
+    await deployer.deploy(tokenContract, "Rokfin Token", "RAE", 18, cap, {from: accounts[0]});
     var token = await tokenContract.deployed();
 
     await deployer.deploy(mintContract, tokenContract.address, {from:accounts[0]});
     var minter = await mintContract.deployed();
     
     await token.addMinter(mintContract.address, {from:accounts[0]});
-    await token.renounceMinter({from:accounts[0]}); 
     
 };
