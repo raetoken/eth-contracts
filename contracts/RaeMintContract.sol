@@ -4,11 +4,7 @@ import "./RaeToken.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 contract RaeMintContract is Ownable {
-    struct CreatorReward {
-        address addr;
-        uint256 value;
-    }
-
+    
     RaeToken private _token;
     
     /**
