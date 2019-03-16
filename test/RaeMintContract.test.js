@@ -7,7 +7,7 @@ contract('RaeMintContract', function(accounts) {
         name: "RokfinToken",
         symbol: "ROK",
         decimals: 18,
-        cap: 21000000
+        cap: 210000000
     };
 
     let token, minter;
@@ -20,7 +20,7 @@ contract('RaeMintContract', function(accounts) {
     })
 
     describe('mint method', ()=>{
-
+        
         it('minting less than 0 throws error', async ()=>{
             try{
                 let status = await minter.mint(accounts[1], -1, {from:creator});
@@ -60,6 +60,65 @@ contract('RaeMintContract', function(accounts) {
             let balanceAfter = await token.balanceOf.call(accounts[2]);
             expect(balanceAfter.toNumber()).to.equal(balanceBefore.toNumber() + mintAmount);
         })
+
+    })
+
+    describe('bulkMintAggregator mints 28% to aggregator and 72% to creator', () => {
+        let aggregator = accounts[8];
+        let addresses = [accounts[0], accounts[1], accounts[2]]
+        let creatorPercent = 72;
+        let aggPercent = 100 - creatorPercent;
+        let values = [2000, 20000, 200000];
+
+        // beforeEach(async function() {
+        //     token = await RaeToken.new(tokenProps.name, tokenProps.symbol, tokenProps.decimals, tokenProps.cap, {from: creator});
+        //     minter = await RaeMintContract.new(token.address, {from:creator});
+        //     token.addMinter(minter.address, {from:creator});
+        // })
+
+        it('mints 28% to aggregator and 72% to creator', async () => {
+            let balancesBefore = [];
+            let balancesAfterExpected = [];
+            
+            addresses.forEach(async (addr, idx) => {
+                var balance = await token.balanceOf.call(addr);
+                balancesBefore.push(balance.toNumber());
+                balancesAfterExpected.push(balance.toNumber() + creatorPercent * values[idx] / 100);
+            })
+
+            let aggBalanceBefore = await token.balanceOf.call(aggregator);
+
+            await minter.bulkMintAggregator(addresses, values, aggregator);
+            
+            addresses.forEach(async (addr, idx) => {
+                var balanceAfter = await token.balanceOf.call(addr);
+                expect(balanceAfter.toNumber()).to.equal(balancesAfterExpected[idx]);
+            });
+
+            let aggBalanceAfter = await token.balanceOf.call(aggregator);
+
+            expect(aggBalanceAfter.toNumber()).to.equal(aggBalanceBefore.toNumber() + (values[0] + values[1] + values[2]) * aggPercent / 100);
+            
+            
+        })
+
+        it('reverts if overflow', async () => {
+
+        })
+
+        it('reverts if addresses.length > values.length', async () => {
+
+        })
+
+        it('reverts if addresses.length < values.length', async () => {
+
+        })
+
+        it('reverts if addresses.length empty', async () => {
+
+        })
+
+
 
     })
 
