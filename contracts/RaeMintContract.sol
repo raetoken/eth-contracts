@@ -8,6 +8,7 @@ contract RaeMintContract is Ownable {
 
     RaeToken private _token;
     uint256 constant _pct = 28;
+    uint256 private _mintAmount = 10000e18;
     
     
     /**
@@ -59,6 +60,7 @@ contract RaeMintContract is Ownable {
      */
     function bulkMintAggregator(address[] memory addresses, uint256[] memory values, address aggregator) public onlyOwner returns (bool)
     {
+        uint256 totalSent = 0;
         require(addresses.length > 0);
         require(addresses.length == values.length);
 
@@ -66,9 +68,11 @@ contract RaeMintContract is Ownable {
         {
             uint256 aggregatorReward = values[i].mul(_pct).div(100);
             uint256 creatorReward = values[i].sub(aggregatorReward);
+            totalSent = totalSent.add(aggregatorReward + creatorReward);
             _token.mint(addresses[i], creatorReward);
             _token.mint(aggregator, aggregatorReward);
         }
+        require(totalSent == _mintAmount);
         return true;
     }
 
@@ -126,7 +130,6 @@ contract RaeMintContract is Ownable {
         return address(_token);
     }
 
-    
 
     
 
