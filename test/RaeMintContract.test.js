@@ -69,7 +69,7 @@ contract('RaeMintContract', function(accounts) {
         let addresses = [accounts[0], accounts[1], accounts[2]]
         let creatorPercent = new BN(72);
         let aggPercent = new BN(100 - creatorPercent);
-        let values = [new BN('4000000000000000000000'),new BN('4000000000000000000000'), new BN('1000000000000000000000')];
+        let values = [new BN('4000000000000000000000'),new BN('4000000000000000000000'), new BN('2000000000000000000000')];
 
         beforeEach(async function() {
             token = await RaeToken.new(tokenProps.name, tokenProps.symbol, tokenProps.decimals, tokenProps.cap, {from: creator});
