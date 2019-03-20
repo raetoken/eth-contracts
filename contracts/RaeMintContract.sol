@@ -65,7 +65,6 @@ contract RaeMintContract is Ownable {
         require(addresses.length > 0);
         require(addresses.length == values.length);
         require(addresses.length == aggregators.length);
-
         for(uint256 i = 0; i < addresses.length; ++i)
         {
             uint256 aggregatorReward = values[i].mul(_pct).div(100);
@@ -76,6 +75,7 @@ contract RaeMintContract is Ownable {
         }
         require(totalSent == _mintAmount);
         _mintPeriods += 1;
+        if(_mintPeriods % 1700 == 0) _mintAmount = _mintAmount.div(2);
         return true;
     }
 
@@ -125,6 +125,10 @@ contract RaeMintContract is Ownable {
     
     function period() public view returns (uint256){
         return _mintPeriods;
+    }
+
+    function mintAmount() public view returns (uint256){
+        return _mintAmount;
     }
 
 

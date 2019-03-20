@@ -115,6 +115,19 @@ contract('RaeMintContract', function(accounts) {
             
         });
 
+        it('mint reward decreased after 1700 periods', async () => {
+            for(let i = 0; i < 1699; ++i) {
+                await minter.bulkMintAggregator(addresses,values,aggregators);
+            }
+            let mintAmount = await minter.mintAmount.call();
+            expect(mintAmount.toString()).to.equal('10000000000000000000000');
+
+            await minter.bulkMintAggregator(addresses,values,aggregators);
+            let mintAmountAfter = await minter.mintAmount.call();
+            expect(mintAmountAfter.toString()).to.equal('5000000000000000000000');
+            
+        })
+
         it('mint period increments by 1 after successful call', async () => {
             let periodBefore = await minter.period.call();
             await minter.bulkMintAggregator(addresses, values, aggregators);
