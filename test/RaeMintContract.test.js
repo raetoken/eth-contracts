@@ -1,18 +1,18 @@
 const RaeToken = artifacts.require("RaeToken");
 const RaeMintContract = artifacts.require("RaeMintContract");
+const BN = web3.utils.BN;
 
 contract('RaeMintContract', function(accounts) {
     let creator = accounts[0];
     let tokenProps = {
-        name: "RokfinToken",
-        symbol: "ROK",
+        name: "Rokfin Token",
+        symbol: "RAE",
         decimals: 18,
-        cap: 21000000
+        cap: "34000000000000000000000000"
     };
-
     let token, minter;
     const REVERT_ERROR_MESSAGE = 'Returned error: VM Exception while processing transaction: revert';
-
+    
     beforeEach(async function() {
         token = await RaeToken.new(tokenProps.name, tokenProps.symbol, tokenProps.decimals, tokenProps.cap, {from: creator});
         minter = await RaeMintContract.new(token.address, {from:creator});
@@ -20,12 +20,13 @@ contract('RaeMintContract', function(accounts) {
     })
 
     describe('mint method', ()=>{
-
+        
         it('minting less than 0 throws error', async ()=>{
             try{
                 let status = await minter.mint(accounts[1], -1, {from:creator});
                 expect.fail();
             } catch (error)
+
             {
                 expect(error.message).to.equal(REVERT_ERROR_MESSAGE);
             }
@@ -60,6 +61,92 @@ contract('RaeMintContract', function(accounts) {
             let balanceAfter = await token.balanceOf.call(accounts[2]);
             expect(balanceAfter.toNumber()).to.equal(balanceBefore.toNumber() + mintAmount);
         })
+
+    })
+
+    describe('bulkMintAggregator', () => {
+        let aggregator = accounts[8];
+        let addresses = [accounts[0], accounts[1], accounts[2]]
+        let creatorPercent = new BN(72);
+        let aggPercent = new BN(100 - creatorPercent);
+        let values = [new BN('4000000000000000000000'),new BN('4000000000000000000000'), new BN('2000000000000000000000')];
+
+        beforeEach(async function() {
+            token = await RaeToken.new(tokenProps.name, tokenProps.symbol, tokenProps.decimals, tokenProps.cap, {from: creator});
+            minter = await RaeMintContract.new(token.address, {from:creator});
+            token.addMinter(minter.address, {from:creator});
+        })
+
+        it('mints 28% to aggregator and 72% to creator', async () => {
+            let balancesBefore = [];
+            let balancesAfterExpected = [];
+            
+            addresses.forEach(async (addr, idx) => {
+                var balance = await token.balanceOf.call(addr);
+                balancesBefore.push(balance);
+                balancesAfterExpected.push(balance.add(values[idx].mul(creatorPercent).div(new BN(100))));
+            })
+
+            let aggBalanceBefore = await token.balanceOf.call(aggregator);
+
+            await minter.bulkMintAggregator(addresses, values, aggregator);
+            
+            addresses.forEach(async (addr, idx) => {
+                var balanceAfter = await token.balanceOf.call(addr);
+                expect(balanceAfter.toString()).to.equal(balancesAfterExpected[idx].toString());
+            });
+
+            let aggBalanceAfter = await token.balanceOf.call(aggregator);
+            let aggExpectedBalanceAfter = aggBalanceBefore.add((values[0].add(values[1]).add(values[2])).mul(aggPercent).div(new BN(100)));
+            expect(aggBalanceAfter.toString()).to.equal(aggExpectedBalanceAfter.toString());
+            
+        })
+
+        it('reverts if minting over cap', async () => {
+            let amountOverCap = "35000000000000000000000000";
+            try{
+                let status = await minter.bulkMintAggregator([accounts[1]], [amountOverCap], aggregator);
+                expect.fail();
+            } catch (error)
+            {
+                expect(error.message).to.equal(REVERT_ERROR_MESSAGE);
+            }
+
+        })
+
+        it('reverts if addresses.length > values.length', async () => {
+            try {
+                await minter.bulkMintAggregator([accounts[1], accounts[2]], [1000], aggregator);
+                expect.fail()
+            } catch (error)
+            {
+                expect(error.message).to.equal(REVERT_ERROR_MESSAGE);
+            }
+
+        })
+
+        it('reverts if addresses.length < values.length', async () => {
+            try {
+                await minter.bulkMintAggregator([accounts[1]], [1000, 2000], aggregator);
+                expect.fail()
+            } catch (error)
+            {
+                expect(error.message).to.equal(REVERT_ERROR_MESSAGE);
+            }
+
+        })
+
+        it('reverts if addresses.length empty', async () => {
+            try {
+                await minter.bulkMintAggregator([], [1000, 2000], aggregator);
+                expect.fail()
+            } catch (error)
+            {
+                expect(error.message).to.equal(REVERT_ERROR_MESSAGE);
+            }
+        })
+
+
 
     })
 
