@@ -9,7 +9,7 @@ module.exports = async function(deployer,networks,accounts) {
    // deployer.deploy(tokenContract, "Rokfin Token", "ROK", 18, {from: accounts[0]}).then({
 
     //})
-    let cap = 21000000;
+    let cap = 34000000e18;
     await deployer.deploy(tokenContract, "Rokfin Token", "RAE", 18, cap, {from: accounts[0]});
     var token = await tokenContract.deployed();
 
