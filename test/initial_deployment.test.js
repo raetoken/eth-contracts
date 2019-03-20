@@ -33,10 +33,10 @@ contract('2_initial_deployment', function(accounts) {
             expect(res).to.equal(true);
         });
 
-        // it('Token creator does not have minting role', async ()=>{
-        //     let res = await token.isMinter.call(creator);
-        //     expect(res).to.equal(false);
-        // });
+        it('Token creator has minting role', async ()=>{
+            let res = await token.isMinter.call(creator);
+            expect(res).to.equal(true);
+        });
 
         it('Token supply is initially 0', async () => {
             let totalSupply = await token.totalSupply.call();
@@ -45,7 +45,7 @@ contract('2_initial_deployment', function(accounts) {
 
         it('Token cap is correct', async () => {
             let cap = await token.cap.call();
-            expect(cap.toNumber()).to.equal(21000000);
+            expect(cap.toString()).to.equal('34000000000000000000000000');
         })
 
 

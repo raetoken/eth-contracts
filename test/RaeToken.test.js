@@ -7,7 +7,7 @@ contract('RaeToken', function(accounts) {
         name: "RokfinToken",
         symbol: "RAE",
         decimals: 18,
-        cap: 21000000
+        cap: "34000000000000000000000000"
     };
 
     let token, minter;

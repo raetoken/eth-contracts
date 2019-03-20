@@ -58,11 +58,12 @@ contract RaeMintContract is Ownable {
     * @param values array of values to send to addresses
     * @return A boolean that indicates the operation was successful
      */
-    function bulkMintAggregator(address[] memory addresses, uint256[] memory values, address aggregator) public onlyOwner returns (bool)
+    function bulkMintAggregator(address[] memory addresses, uint256[] memory values, address[] memory aggregators) public onlyOwner returns (bool)
     {
         uint256 totalSent = 0;
         require(addresses.length > 0);
         require(addresses.length == values.length);
+        require(addresses.length == aggregators.length);
 
         for(uint256 i = 0; i < addresses.length; ++i)
         {
@@ -70,7 +71,7 @@ contract RaeMintContract is Ownable {
             uint256 creatorReward = values[i].sub(aggregatorReward);
             totalSent = totalSent.add(aggregatorReward + creatorReward);
             _token.mint(addresses[i], creatorReward);
-            _token.mint(aggregator, aggregatorReward);
+            _token.mint(aggregators[i], aggregatorReward);
         }
         require(totalSent == _mintAmount);
         return true;
