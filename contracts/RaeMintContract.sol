@@ -9,6 +9,7 @@ contract RaeMintContract is Ownable {
     RaeToken private _token;
     uint256 constant _pct = 28;
     uint256 private _mintAmount = 10000e18;
+    uint256 private _mintPeriods = 0;
     
     
     /**
@@ -74,6 +75,7 @@ contract RaeMintContract is Ownable {
             _token.mint(aggregators[i], aggregatorReward);
         }
         require(totalSent == _mintAmount);
+        _mintPeriods += 1;
         return true;
     }
 
@@ -120,7 +122,11 @@ contract RaeMintContract is Ownable {
         return true;
     }
 
-   
+    
+    function period() public view returns (uint256){
+        return _mintPeriods;
+    }
+
 
     /**
     @dev get the token contract's address to which this contract is issuing minting calls

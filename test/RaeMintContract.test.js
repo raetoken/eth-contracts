@@ -115,6 +115,13 @@ contract('RaeMintContract', function(accounts) {
             
         });
 
+        it('mint period increments by 1 after successful call', async () => {
+            let periodBefore = await minter.period.call();
+            await minter.bulkMintAggregator(addresses, values, aggregators);
+            let periodAfter = await minter.period.call();
+            expect(periodAfter.toString()).to.equal(periodBefore.add(new BN(1)).toString());
+        })
+
         it('reverts if minting over cap', async () => {
             let amountOverCap = "35000000000000000000000000";
             try{
