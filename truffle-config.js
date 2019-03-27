@@ -44,11 +44,11 @@ module.exports = {
     //
 
 
-    // development: {
-    //  host: "127.0.0.1",     // Localhost (default: none)
-    //  port: 8545,            // Standard Ethereum port (default: none)
-    //  network_id: "*",       // Any network (default: none)
-    // },
+    development: {
+     host: "127.0.0.1",     // Localhost (default: none)
+     port: 8545,            // Standard Ethereum port (default: none)
+     network_id: "*",       // Any network (default: none)
+    },
 
     // kovan: {
     //   provider: () => new HDWalletProvider(mnemonic, `https://kovan.infura.io/${process.env.INFURA_API_KEY}`),

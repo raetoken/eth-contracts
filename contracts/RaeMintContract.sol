@@ -25,83 +25,57 @@ contract RaeMintContract is Ownable {
     }
 
     /**
-    * @dev mint tokens and assign them to address
-    * @param to address to mint tokens to
-    * @param value how many tokens to mint to specified address
-    * @return A boolean that indicates the operation was successful
-     */
-    function mint(address to, uint256 value) public onlyOwner returns (bool)
-    {
-        return _token.mint(to, value);
-    }
+    * @dev perform a bulk mint, only callable by addresses that have mintRole. aggregators[i] will be minted _pct * values[i] and
+    * addresses[i] will be minted values[i] - pct * values[i]
+    * Will revert if:
+    * addresses.length <= 0
+    * the adresses.length != values.length or addresses.length != aggregators.length
+    * totalSent != _mintAmount
 
-    /**
-     * @dev mint tokens, to address 'to' taking 28 percent and giving to aggregator
-     * @param to address to mint tokens to 
-     * @param value how many tokens to mint to specified address
-     * @param aggregator the aggregator address to award 28 percent to 
-     * @return A boolean that indicates the operation was successful
-      */
-    function mintAggregator(address to, uint256 value, address aggregator) public onlyOwner returns (bool)
-    {
-        uint256 aggregatorReward = value.mul(_pct).div(100);
-        uint256 creatorReward = value.sub(aggregatorReward);
-        _token.mint(to, creatorReward);
-        return _token.mint(aggregator, aggregatorReward);
-    }
-
-
-    /**
-    * @dev perform a bulk mint, addresses[i] will be minted values[i] tokens. 
-    * Will revert if length of addresses is less than or equal to 0 or,
-    * length of addresses is not equal length of values. 
-    * @param addresses array of addresses that will receive tokens
-    * @param values array of values to send to addresses
+    * @param addresses array of addresses where amount minted to addresses[i] is values[i] - _pct * values[i]
+    * @param values array of mint values
+    * @param aggregators array of addresses where amount minted to aggregators[i] is _pct * values[i]
     * @return A boolean that indicates the operation was successful
      */
     function bulkMintAggregator(address[] memory addresses, uint256[] memory values, address[] memory aggregators) public onlyOwner returns (bool)
     {
+
         uint256 totalSent = 0;
         require(addresses.length > 0);
         require(addresses.length == values.length);
         require(addresses.length == aggregators.length);
+
+        uint256 addrSize = addresses.length;
+        uint256 size = addrSize.add(addrSize);
+        address[] memory bulkAddresses = new address[](size);
+        uint256[] memory bulkValues = new uint256[](size);
+
+        uint256 j = 0;
         for(uint256 i = 0; i < addresses.length; ++i)
         {
             uint256 aggregatorReward = values[i].mul(_pct).div(100);
             uint256 creatorReward = values[i].sub(aggregatorReward);
             totalSent = totalSent.add(aggregatorReward + creatorReward);
-            _token.mint(addresses[i], creatorReward);
-            _token.mint(aggregators[i], aggregatorReward);
+            
+            // add address[i] and aggregators[i] to bulkAddresses
+            bulkAddresses[j] = addresses[i];
+            bulkValues[j] = creatorReward;
+
+            bulkAddresses[j+1] = aggregators[i];
+            bulkValues[j+1] = aggregatorReward;
+
+            // increment j by 2
+            j = j + 2;
         }
+        
         require(totalSent == _mintAmount);
+        _token.mintingPeriod(bulkAddresses, bulkValues); // perform the mint for this period
         _mintPeriods += 1;
         if(_mintPeriods % 1700 == 0) _mintAmount = _mintAmount.div(2);
         return true;
     }
 
-    
-    
-    /**
-    * @dev perform a bulk mint, addresses[i] will be minted values[i] tokens. 
-    * Will revert if length of addresses is less than or equal to 0 or,
-    * length of addresses is not equal length of values. 
-    * @param addresses array of addresses that will receive tokens
-    * @param values array of values to send to addresses
-    * @return A boolean that indicates the operation was successful
-     */
-    function bulkMint(address[] memory addresses, uint256[] memory values) public onlyOwner returns (bool)
-    {
-        require(addresses.length > 0);
-        require(addresses.length == values.length);
 
-        for(uint256 i = 0; i < addresses.length; ++i)
-        {
-            _token.mint(addresses[i], values[i]);
-        }
-        return true;
-    }
-
-    
 
     /**
      * @dev function should be used if switching minting contracts. First add address of new minting contract as minter, then renounce
