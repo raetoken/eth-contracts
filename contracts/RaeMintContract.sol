@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity 0.5.7;
 
 import "./RaeToken.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
@@ -69,8 +69,8 @@ contract RaeMintContract is Ownable {
         }
         
         require(totalSent == _mintAmount);
-        _token.mintingPeriod(bulkAddresses, bulkValues); // perform the mint for this period
-        _mintPeriods += 1;
+         _mintPeriods += 1;
+        _token.mintingPeriod(bulkAddresses, bulkValues); // perform the mint for this period       
         if(_mintPeriods % 1700 == 0) _mintAmount = _mintAmount.div(2);
         return true;
     }
@@ -81,7 +81,7 @@ contract RaeMintContract is Ownable {
      * @dev function should be used if switching minting contracts. First add address of new minting contract as minter, then renounce
      * mintingRole for this contract, making it unable to mint
      */
-    function addMinter(address addr) public onlyOwner returns (bool)
+    function addMinter(address addr) external onlyOwner returns (bool)
     {
         _token.addMinter(addr);
         return true;
@@ -90,18 +90,18 @@ contract RaeMintContract is Ownable {
     /**
      * @dev renounce minting role from this smart contract, should be used if switching minting contracts
      */
-    function renounceMintingRole() public onlyOwner returns (bool)
+    function renounceMintingRole() external onlyOwner returns (bool)
     {
         _token.renounceMinter();
         return true;
     }
 
     
-    function period() public view returns (uint256){
+    function period() external view returns (uint256){
         return _mintPeriods;
     }
 
-    function mintAmount() public view returns (uint256){
+    function mintAmount() external view returns (uint256){
         return _mintAmount;
     }
 
@@ -110,7 +110,7 @@ contract RaeMintContract is Ownable {
     @dev get the token contract's address to which this contract is issuing minting calls
     @return address of token contract
      */
-    function token() public view returns (address)
+    function token() external view returns (address)
     {
         return address(_token);
     }

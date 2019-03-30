@@ -133,7 +133,7 @@ contract('RaeMintContract', function(accounts) {
         //     expect(mintAmountAfter.toString()).to.equal('5000000000000000000000');
         //     expect(mintAmountTokenAfter.toString()).to.equal('5000000000000000000000');
             
-            
+        
         // })
 
         it('mint period increments by 1 after successful call', async () => {
