@@ -118,6 +118,36 @@ contract('RaeMintContract', function(accounts) {
             
         });
 
+        it ('test gas for 100 addresses', async () => {
+            var val = [];
+            var addr = [];
+            var agg = [];
+            for(let i = 0; i < 100; ++i) {
+                val.push(new BN('100000000000000000000'))
+                addr.push(accounts[1]);
+                agg.push(accounts[9]);
+            }
+            await minter.bulkMintAggregator(addr, val, agg);
+            expect(val.length).to.equal(100);
+
+        })
+
+        it('test gas for 200 addresses', async () => {
+            var val = [];
+            var addr = [];
+            var agg = [];
+            for(let i = 0; i < 200; ++i) {
+                val.push(new BN('50000000000000000000'))
+                addr.push(accounts[1]);
+                agg.push(accounts[9]);
+            }
+            await minter.bulkMintAggregator(addr, val, agg);
+            expect(val.length).to.equal(200);
+        });
+
+
+
+
         // it('mint reward halved after 1700 periods', async () => {
         //     for(let i = 0; i < 1699; ++i) {
         //         await minter.bulkMintAggregator(addresses,values,aggregators);
