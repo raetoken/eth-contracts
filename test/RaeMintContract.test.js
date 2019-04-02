@@ -118,6 +118,76 @@ contract('RaeMintContract', function(accounts) {
             
         });
 
+        it('28% and 72% enforced in multiple mints instead of 1 for entire period', async () => {
+            // Calculate expected balances after minting
+            let balancesBefore = {}
+            let balancesAfterExpected = {};
+
+            for(let i = 0; i < addresses.length; ++i) {
+                addr = addresses[i];
+                addrAgg = aggregators[i];
+                let balanceAgg = await token.balanceOf.call(addrAgg);
+                let balance = await token.balanceOf.call(addr);
+                
+
+                if (balancesBefore[addr] === undefined) balancesBefore[addr] = balance;
+                if (balancesAfterExpected[addr] === undefined) balancesAfterExpected[addr] = balance;
+                if (balancesBefore[addrAgg] === undefined) balancesBefore[addrAgg] = balanceAgg;
+                if (balancesAfterExpected[addrAgg] === undefined) balancesAfterExpected[addrAgg] = balanceAgg;
+
+                var aggReward = values[i].mul(aggPercent).div(new BN(100));
+                var creatorReward = values[i].sub(aggReward);
+
+                balancesAfterExpected[addrAgg] = balancesAfterExpected[addrAgg].add(aggReward);
+                balancesAfterExpected[addr] = balancesAfterExpected[addr].add(creatorReward);
+
+                //console.log(`balancesAfterExpected[${addrAgg}] = ${balancesAfterExpected[addrAgg]}`)
+            }
+
+            // Perform the bulkMint
+            let sz = addresses.length;
+            await minter.bulkMintAggregator(addresses.slice(0, 2), values.slice(0, 2), aggregators.slice(0,2), {from: creator});
+            await minter.bulkMintAggregator(addresses.slice(2, sz), values.slice(2, sz), aggregators.slice(2, sz), {from: creator});
+            
+            let balanceAfter = {}
+            let allAddresses = addresses.concat(aggregators);
+            
+            // Check that balances are correct
+            for(let i = 0; i < allAddresses.length; ++i) {
+                let addr = allAddresses[i];
+                balanceAfter[addr] = await token.balanceOf.call(addr);
+                expect(balanceAfter[addr].toString()).to.equal(balancesAfterExpected[addr].toString());
+            }
+        });
+
+        it('reverts if sum of values > 10000e18', async () => {
+            var val = [new BN('1000000000000000000000'),new BN('9000000000000000000001')]
+            var addr = [accounts[0], accounts[1]];
+            var agg = [accounts[8], accounts[7]];
+            
+            try{
+                await minter.bulkMintAggregator(addr, val, agg);
+                expect.fail();
+            } catch (error)
+            {
+                expect(error.message).to.equal(REVERT_ERROR_MESSAGE);
+            }
+        })
+
+        it('reverts if sum of values > tokens remaining in period', async () => {
+            var val1 = [new BN('1000000000000000000000')]
+            var val2 = [new BN('9000000000000000000001')]
+            await minter.bulkMintAggregator([accounts[0]], val1, [accounts[8]]);
+            try{
+                await minter.bulkMintAggregator([accounts[1]], val2, [accounts[2]]);
+                expect.fail();    
+            } catch (error) {
+                expect(error.message).to.equal(REVERT_ERROR_MESSAGE);
+            }
+            
+        });
+
+
         it ('test gas for 100 addresses', async () => {
             var val = [];
             var addr = [];
@@ -132,39 +202,24 @@ contract('RaeMintContract', function(accounts) {
 
         })
 
-        it('test gas for 200 addresses', async () => {
-            var val = [];
-            var addr = [];
-            var agg = [];
-            for(let i = 0; i < 200; ++i) {
-                val.push(new BN('50000000000000000000'))
-                addr.push(accounts[1]);
-                agg.push(accounts[9]);
+
+        it('mint reward halved after 1700 periods', async () => {
+            for(let i = 0; i < 1699; ++i) {
+                await minter.bulkMintAggregator(addresses,values,aggregators);
             }
-            await minter.bulkMintAggregator(addr, val, agg);
-            expect(val.length).to.equal(200);
-        });
+            let mintAmount = await minter.mintAmount.call();
+            let mintAmountToken = await token.mintAmount.call();
+            expect(mintAmount.toString()).to.equal('10000000000000000000000');
+            expect(mintAmountToken.toString()).to.equal('10000000000000000000000');
 
-
-
-
-        // it('mint reward halved after 1700 periods', async () => {
-        //     for(let i = 0; i < 1699; ++i) {
-        //         await minter.bulkMintAggregator(addresses,values,aggregators);
-        //     }
-        //     let mintAmount = await minter.mintAmount.call();
-        //     let mintAmountToken = await token.mintAmount.call();
-        //     expect(mintAmount.toString()).to.equal('10000000000000000000000');
-        //     expect(mintAmountToken.toString()).to.equal('10000000000000000000000');
-
-        //     await minter.bulkMintAggregator(addresses,values,aggregators);
-        //     let mintAmountAfter = await minter.mintAmount.call();
-        //     let mintAmountTokenAfter = await token.mintAmount.call();
-        //     expect(mintAmountAfter.toString()).to.equal('5000000000000000000000');
-        //     expect(mintAmountTokenAfter.toString()).to.equal('5000000000000000000000');
+            await minter.bulkMintAggregator(addresses,values,aggregators);
+            let mintAmountAfter = await minter.mintAmount.call();
+            let mintAmountTokenAfter = await token.mintAmount.call();
+            expect(mintAmountAfter.toString()).to.equal('5000000000000000000000');
+            expect(mintAmountTokenAfter.toString()).to.equal('5000000000000000000000');
             
         
-        // })
+        })
 
         it('mint period increments by 1 after successful call', async () => {
             let periodBefore = await minter.period.call();
@@ -224,6 +279,7 @@ contract('RaeMintContract', function(accounts) {
 
 
     })
+
 
     describe('transfer to new mint contract', () => {
         let aggregators = [accounts[7]];

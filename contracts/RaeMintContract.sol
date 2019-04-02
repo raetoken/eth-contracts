@@ -8,8 +8,7 @@ contract RaeMintContract is Ownable {
 
     RaeToken private _token;
     uint256 constant _pct = 28;
-    uint256 private _mintAmount = 10000e18;
-    uint256 private _mintPeriods = 0;
+
     
     
     /**
@@ -67,11 +66,8 @@ contract RaeMintContract is Ownable {
             // increment j by 2
             j = j + 2;
         }
-        
-        require(totalSent == _mintAmount);
-         _mintPeriods += 1;
-        _token.mintingPeriod(bulkAddresses, bulkValues); // perform the mint for this period       
-        if(_mintPeriods % 1700 == 0) _mintAmount = _mintAmount.div(2);
+        require(totalSent <= _token.remainingInPeriod());
+        _token.mintBulk(bulkAddresses, bulkValues); // perform the mint for this period       
         return true;
     }
 
@@ -98,13 +94,21 @@ contract RaeMintContract is Ownable {
 
     
     function period() external view returns (uint256){
-        return _mintPeriods;
+        return _token.period();
     }
 
     function mintAmount() external view returns (uint256){
-        return _mintAmount;
+        return _token.mintAmount();
     }
 
+
+    function tokensRemainingInPeriod() external view returns (uint256) {
+        return _token.remainingInPeriod();
+    }
+
+    function tokensInPeriod() external view returns (uint256) {
+        return _token.totalInPeriod();
+    }
 
     /**
     @dev get the token contract's address to which this contract is issuing minting calls
