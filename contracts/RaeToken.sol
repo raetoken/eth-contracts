@@ -18,10 +18,11 @@ requirements:
  - halveEvery can never be changed
  */
 contract RaeToken is ERC20Detailed, ERC20Capped, ERC20Burnable, ERC20Pausable {
-
     uint256 private _mintAmount = 10000e18;
     uint256 private _mintPeriods = 0;
+    uint256 private _totalInPeriod = 0;
     uint256 constant private _halveEvery = 1700; // halve mint amount every 1700 mint periods
+    mapping (address => uint256) private _balances;
 
     constructor(string memory name, string memory symbol, uint8 decimals, uint256 cap)
         ERC20Burnable()
@@ -44,20 +45,18 @@ contract RaeToken is ERC20Detailed, ERC20Capped, ERC20Burnable, ERC20Pausable {
     @param addresses array of addresses where amount minted to addresses[i] is values[i]
     @param values array of token amounts that add up to _mintAmount
      */
-    function mintingPeriod(address[] calldata addresses, uint256[] calldata values) external onlyMinter returns (bool) {
+    function mintBulk(address[] calldata addresses, uint256[] calldata values) external onlyMinter returns (bool) {
         
-        uint256 totalSent = 0;
         require(addresses.length > 0);
         require(addresses.length == values.length);
 
         for(uint256 i = 0; i < addresses.length; ++i) {
-            totalSent = totalSent.add(values[i]);
+            _totalInPeriod = _totalInPeriod.add(values[i]);
             _mint(addresses[i], values[i]);
         }
+        require(_totalInPeriod <= _mintAmount);
+        if( _totalInPeriod == _mintAmount) _updateMintParams();
 
-        require(totalSent == _mintAmount);
-        _mintPeriods = _mintPeriods.add(1);
-        if(_mintPeriods % _halveEvery == 0) _mintAmount = _mintAmount.div(2);
         return true;
     }
 
@@ -67,6 +66,27 @@ contract RaeToken is ERC20Detailed, ERC20Capped, ERC20Burnable, ERC20Pausable {
 
     function mintAmount() external view returns (uint256){
         return _mintAmount;
+    }
+
+    function _updateMintParams() internal returns (bool) {
+        // increment period
+        _mintPeriods = _mintPeriods.add(1);
+
+        // decay if _mintPeriods is 1700, 3400, 5100, etc. Target for 1 mint per day
+        if(_mintPeriods % _halveEvery == 0) _mintAmount = _mintAmount.div(2);
+
+        // reset the _totalInPeriod to 0
+        _totalInPeriod = 0;
+
+        return true;
+    }
+
+    function remainingInPeriod() external view returns (uint256) {
+        return _mintAmount - _totalInPeriod;
+    }
+
+    function totalInPeriod() external view returns (uint256) {
+        return _totalInPeriod;
     }
 
 }
