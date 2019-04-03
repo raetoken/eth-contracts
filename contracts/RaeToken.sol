@@ -45,7 +45,7 @@ contract RaeToken is ERC20Detailed, ERC20Capped, ERC20Burnable, ERC20Pausable {
     @param addresses array of addresses where amount minted to addresses[i] is values[i]
     @param values array of token amounts that add up to _mintAmount
      */
-    function mintBulk(address[] calldata addresses, uint256[] calldata values) external onlyMinter returns (bool) {
+    function mintBulk(address[] calldata addresses, uint256[] calldata values) external whenNotPaused onlyMinter returns (bool) {
         
         require(addresses.length > 0);
         require(addresses.length == values.length);
@@ -59,6 +59,7 @@ contract RaeToken is ERC20Detailed, ERC20Capped, ERC20Burnable, ERC20Pausable {
 
         return true;
     }
+
 
     function period() external view returns (uint256){
         return _mintPeriods;
@@ -87,6 +88,25 @@ contract RaeToken is ERC20Detailed, ERC20Capped, ERC20Burnable, ERC20Pausable {
 
     function totalInPeriod() external view returns (uint256) {
         return _totalInPeriod;
+    }
+
+    /**
+    @dev do not allow mint during pause
+     */
+    function mint(address to, uint256 value) public whenNotPaused onlyMinter returns (bool) {
+        super.mint(to, value);
+        return true;
+    }
+
+    /**
+    @dev do not allow burn during pause
+     */
+    function burn(uint256 value) public whenNotPaused {
+        super.burn(value);
+    }
+
+    function burnFrom(address from, uint256 value) public whenNotPaused {
+        super.burnFrom(from, value);
     }
 
 }
