@@ -100,8 +100,8 @@ contract RaeToken is ERC20Detailed, ERC20Capped, ERC20Burnable, ERC20Pausable {
     @dev do not allow mint during pause
      */
     function mint(address to, uint256 value) public whenNotPaused onlyMinter returns (bool) {
-        super.mint(to, value);
-        return true;
+        //super.mint(to, value);
+        revert();
     }
 
     /**
