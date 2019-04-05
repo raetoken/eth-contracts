@@ -29,7 +29,7 @@ contract('RaeToken', function(accounts) {
         let creatorBalance = await token.balanceOf.call(creator);
         expect(creatorBalance.toString()).to.equal(initialSupply);
     })
-    
+
 
     it('creator can assign new minter', async () =>{
         await token.addMinter(accounts[2], {from: creator});
@@ -57,9 +57,7 @@ contract('RaeToken', function(accounts) {
         }
     });
 
-    it('no mints when token paused', async () => {
-        let person = accounts[3];
-        await token.pause({from: creator});
+    it('no mints at all', async () => {
         try
         {
             await token.mint(accounts[2], 100, {from:creator});
@@ -85,7 +83,6 @@ contract('RaeToken', function(accounts) {
 
     it('no burns when token paused', async () => {
         let person = accounts[3];
-        await token.mint(accounts[3], 100, {from:creator});
         await token.pause({from: creator});
         try
         {
@@ -96,19 +93,6 @@ contract('RaeToken', function(accounts) {
             expect(error.message).to.equal(REVERT_ERROR_MESSAGE);
         }
     });
-
-    it('burn, happens on correct address', async () => {
-        let person = accounts[3];
-        let burnAmount = new BN('10');
-        await token.mint(accounts[3], 100, {from:creator});
-        let balbefore = await token.balanceOf.call(accounts[3]);
-        await token.burn(burnAmount, {from: accounts[3]});
-        
-        let balafter = await token.balanceOf.call(accounts[3]);
-        expect(balafter.toString()).to.equal((balbefore.sub(burnAmount)).toString());
-
-
-    })
 
 
     
