@@ -11,6 +11,8 @@ contract('RaeToken', function(accounts) {
         cap: "34000000000000000000000000"
     };
 
+    let initialSupply = '84000000000000000000000' // 84,000 RAE
+
     let token, minter;
     const REVERT_ERROR_MESSAGE = 'Returned error: VM Exception while processing transaction: revert';
 
@@ -18,10 +20,16 @@ contract('RaeToken', function(accounts) {
         token = await RaeToken.new(tokenProps.name, tokenProps.symbol, tokenProps.decimals, tokenProps.cap, {from: creator});
     })
     
-    it('total supply of tokens initialized to 0', async () => {
+    it('total supply of tokens initialized to 84,000 RAE', async () => {
         let totalSupply = await token.totalSupply.call();
-        expect(totalSupply.toNumber()).to.equal(0);
+        expect(totalSupply.toString()).to.equal(initialSupply);
     })
+
+    it('84,000 initial RAE go to creator of token contract', async () => {
+        let creatorBalance = await token.balanceOf.call(creator);
+        expect(creatorBalance.toString()).to.equal(initialSupply);
+    })
+    
 
     it('creator can assign new minter', async () =>{
         await token.addMinter(accounts[2], {from: creator});

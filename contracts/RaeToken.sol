@@ -18,7 +18,7 @@ requirements:
  - halveEvery can never be changed
  */
 contract RaeToken is ERC20Detailed, ERC20Capped, ERC20Burnable, ERC20Pausable {
-    uint256 private _mintAmount = 10000e18;
+    uint256 private _mintAmount = 216000e18;
     uint256 private _mintPeriods = 0;
     uint256 private _totalInPeriod = 0;
     uint256 constant private _halveEvery = 1700; // halve mint amount every 1700 mint periods
@@ -31,7 +31,10 @@ contract RaeToken is ERC20Detailed, ERC20Capped, ERC20Burnable, ERC20Pausable {
         ERC20Detailed(name, symbol, decimals)
         ERC20Pausable()
         ERC20()
-    public {}
+    public 
+    {
+        _mint(msg.sender, 84000e18);
+    }
 
     /**
     * @dev perform a minting period
@@ -70,6 +73,9 @@ contract RaeToken is ERC20Detailed, ERC20Capped, ERC20Burnable, ERC20Pausable {
     }
 
     function _updateMintParams() internal returns (bool) {
+        // first period is for 216,000 RAE, after this will go to 10000 RAE until decay
+        if(_mintPeriods == 0) _mintAmount = 10000e18;
+
         // increment period
         _mintPeriods = _mintPeriods.add(1);
 
