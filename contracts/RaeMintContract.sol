@@ -95,10 +95,15 @@ contract RaeMintContract is Ownable {
 
 
 
-    /**
-     * @dev function should be used if switching minting contracts. First add address of new minting contract as minter, then renounce
+     /**
+     * @dev function addMinter should be used if switching minting contracts. Minting contracts will be switched
+     * in the future to include a sufficient reward to incentivize federated servers to work for the network. 
+     * This amount will be determined after the costs of running federated servers are known after 
+     * a period of initial network usage. 
+     * Decision was made to switch contracts rather than use malleable variables for transparency 
+     * First add address of new minting contract as minter, then renounce
      * mintingRole for this contract, making it unable to mint
-     */
+     */ 
     function addMinter(address addr) external onlyOwner returns (bool)
     {
         _token.addMinter(addr);
